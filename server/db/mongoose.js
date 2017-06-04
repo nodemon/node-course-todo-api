@@ -5,7 +5,7 @@ var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 // since we are using a mlab db .. will need to config PROCESS.env.MONGODB_URI
 // heroku config:set MONGODB_URI=somevalue
-mongoose.connect(PROCESS.env.MONGODB_URI || 'mongodb://localhost:27017/TodoApp');
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/TodoApp');
 
 module.exports = {
   mongoose
