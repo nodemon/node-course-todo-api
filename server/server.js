@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+const {ObjectID} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
@@ -35,21 +36,35 @@ app.get('/todos', (req, res) => {
 app.get('/todos/:id', (req, res) => {
   var id = req.params.id;
 
-  const {ObjectID} = require('mongodb');
   if (!ObjectID.isValid(id)){
     return res.status(400).send('Invalid Id');
   }
 
   Todo.findById(id).then( (todo)=> {
     if (!todo) {
-      return res.status(404).send(); // .. send empty body
+      return res.status(404).send();
     }
     res.send({todo});
   }).catch((e) => {
     res.status(400).send(e);
   });
+});
 
+app.delete('/todos/:id', (req, res) => {
+  var id = req.params.id;
 
+  if (!ObjectID.isValid(id)){
+    return res.status(400).send('Invalid Id');
+  }
+
+  Todo.findByIdAndRemove(id).then( (todo) => {
+    if (!todo) {
+      return res.status(404).send();
+    }
+    res.send({todo});
+  }).catch((e) => {
+    res.status(400).send(e);
+  });
 })
 
 app.listen(port, () => {
@@ -57,31 +72,3 @@ app.listen(port, () => {
 })
 
 module.exports = {app};
-
-//
-// var newTodo = new Todo({
-//   text: 'Cook Dinner'
-// });
-//
-// newTodo.save().then( (doc) => {
-//   console.log('Saved todo');
-//   console.log(JSON.stringify(doc, undefined, 2));
-// }, (e) => {
-//   console.log('Unable to save todo', e);
-// });
-//
-// // User
-//
-//
-// var newUser = new User({
-//   name: 'Nikhil  ',
-//   email: 'niks@git.com',
-//   age: 31
-// });
-//
-// newUser.save().then( (doc) => {
-//   console.log('Saved user');
-//   console.log(JSON.stringify(doc, undefined, 2));
-// }, (e) => {
-//   console.log('Unable to save user', e);
-// });
