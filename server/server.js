@@ -27,6 +27,26 @@ app.get('/todos', (req, res) => {
   }).catch((e) => {
     res.status(400).send(e);
   })
+});
+
+app.get('/todos/:id', (req, res) => {
+  var id = req.params.id;
+
+  const {ObjectID} = require('mongodb');
+  if (!ObjectID.isValid(id)){
+    res.status(400).send('Invalid Id');
+  }
+
+  Todo.findById(id).then( (todo)=> {
+    if (!todo) {
+      res.status(404).send(); // .. send empty body
+    }
+    res.send({todo});
+  }).catch((e) => {
+    res.status(400).send(e);
+  });
+
+
 })
 
 app.listen(3000, () => {
