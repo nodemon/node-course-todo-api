@@ -73,7 +73,7 @@ app.patch('/todos/:id', (req, res) => {
   // picks the following properties if they exist in the request
   var body = _.pick(req.body, ['text', 'completed']);
 
-  if (!ObjectID.isValid(id)){
+  if (!ObjectID.isValid(id)) {
     return res.status(400).send('Invalid Id');
   }
 

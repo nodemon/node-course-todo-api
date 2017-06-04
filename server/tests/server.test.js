@@ -153,3 +153,46 @@ describe ('DELETE /todos/:id', () => {
   });
 
 })
+
+describe('PATCH /todos/:id', () => {
+  var id = testTodos[0]._id.toHexString();
+  var updatedText = 'This is Updated Text';
+
+  it('should update the todo', (done) => {
+    request(app)
+      .patch(`/todos/${id}`)
+      .send({text: updatedText, completed: true})
+      .expect(200)
+      .expect ( (res) => {
+        expect(res.body.todo.text).toBe(updatedText);
+        expect(res.body.todo.completed).toExist();
+        expect(res.body.todo.completedAt).toBeA('number');
+      })
+      .end ( (err, res) => {
+        if (err) {
+          return done (err);
+        }
+        Todo.findById(id).then ((todo) => {
+          expect(todo.text).toBe(updatedText);
+          expect(todo.completed).toExist(); // true
+          expect(todo.completedAt).toBeA('number');
+          done();
+        }).catch ((e) => done(e));
+      })
+
+  });
+
+  it('should clear completedAt when todo is not complete', (done) => {
+    request(app)
+      .patch(`/todos/${id}`)
+      .send({completed: false})
+      .expect(200)
+      .expect ( (res) => {
+        expect(res.body.todo.completed).toNotExist(); // false`
+        expect(res.body.todo.completedAt).toNotExist(); // null
+      })
+      .end(done)
+
+  });
+
+})
