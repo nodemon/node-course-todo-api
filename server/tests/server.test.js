@@ -15,13 +15,14 @@
 
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
-const testTodos = [{ text : 'Test note 1'}, {text : 'Test note 2'}];
+const testTodos = [{ _id: new ObjectID(), text : 'Test note 1'}, {_id: new ObjectID(), text : 'Test note 2'}];
 
-// runs before each test.. populating seed data
+// runs before each test.. populating Seed data
 beforeEach((done) => {
   Todo.remove({}).then( () => {
     return Todo.insertMany(testTodos);
@@ -82,4 +83,33 @@ describe('GET /todos', () => {
       })
       .end(done);
   })
+})
+
+describe ('GET /todos/:id', () => {
+  it('should return todo doc', (done) => {
+    request(app)
+      .get(`/todos/${testTodos[0]._id.toHexString()}`)
+      .expect(200)
+      .expect ( (res) => {
+        expect(res.body.todo.text).toBe(testTodos[0].text);
+      })
+      .end(done);
+  });
+
+  it ('should return 404 it todo not found', (done) => {
+    var hexId = new ObjectID().toHexString();
+    request (app)
+      .get(`/todos/${hexId}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it ('should return 400 for non-objectId', (done) => {
+    request (app)
+      .get(`/todos/abc123`)
+      .expect(400)
+      .end(done);
+  });
+
+
 })
