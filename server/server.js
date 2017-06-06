@@ -4,6 +4,7 @@ const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
+const bcrypt = require('bcryptjs');
 
 const {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
@@ -104,11 +105,26 @@ app.post('/users', (req, res) => {
   user.save().then((user) => { // this user is the same object as defined above
     return user.generatAuthToken();
   }).then ((token) => {
-    res.header('x-auth', token).send(user);
+    res.header('x-auth',token).send(user);
   }).catch( (e) => {
      res.status(400).send(e);
   });
 });
+
+// POST /users/login
+app.post('/users/login', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+
+  User.findByCredentials(body.email, body.password).then ((user) => {
+    return user.generatAuthToken().then ((token) => {
+      // we provide the resolve method here instead of regular chaining to get access to 'user' from previous Promise
+      res.header('x-auth',token).send(user);
+    })
+  })
+  .catch( (errorCode) => {
+    res.status(errorCode).send();
+  });
+})
 
 
 // GET /users/me .. using authenticate middleware
