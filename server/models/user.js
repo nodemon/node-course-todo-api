@@ -1,24 +1,65 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 
-var User = mongoose.model('User', {
-  name : {
-    type: String,
-    required: true,
-    minLength: 1,
-    trim: true
-  },
+var UserSchema = new mongoose.Schema({
   email : {
     type: String,
     required: true,
     minLength: 1,
-    trim: true
+    trim: true,
+    unique: true,
+    validate : {
+      validator: validator.isEmail,
+      message: "Value is not a valid email",
+      isAsync: true
+    }
   },
-  age : {
+  password: {
     type: String,
-    required: true
-  }
+    required: true,
+    minLength: 6
+  },
+  tokens: [{
+    access: {
+      type: String,
+      required: true
+    },
+    token: {
+      type: String,
+      required: true
+    }
+  }]
 });
 
-module.exports = {
-  User
-};
+
+// Model methods and Instance methods can be defined on Mongoose UserSchema
+
+// Instance method on the document which uses UserSchema
+UserSchema.methods.generatAuthToken = function () {
+  // used regular function as arrow function does not bind 'this' variable
+  var user = this;
+  var access = 'auth';
+  var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
+  user.tokens.push({access, token});
+
+  // can return anything from the promise call back.. will be available to the next then()
+  return user.save().then(() => {
+    // returning token directly would also make it available for the promise chain
+    // However this way it will be available only when save() is successfull
+    return token;
+  });
+}
+
+// Override an existing Instance method
+// Determines what exactly gets send back when a mongoose model is converted to JSON value
+UserSchema.methods.toJSON = function () {
+  var user = this;
+  var userObject = user.toObject(); // taking mongoose object to a regular object where only the document fields exist
+  return _.pick(userObject, ['_id', 'email']);
+}
+
+var User = mongoose.model('User', UserSchema);
+
+module.exports = {User};
