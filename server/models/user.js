@@ -60,6 +60,28 @@ UserSchema.methods.toJSON = function () {
   return _.pick(userObject, ['_id', 'email']);
 }
 
+
+// Model method
+UserSchema.statics.findByToken = function (token) {
+  var User = this;  // corresponds to model not the document
+  var decoded;
+
+  try {
+    decoded = jwt.verify(token, 'abc123');
+  } catch (e) {
+    // return new Promise((resolve, reject) => {
+    //   reject();
+    // })
+    return Promise.reject(); // code has same effect as code above
+  }
+
+  return User.findOne({
+    _id : decoded._id,
+    'tokens.token': token, // need quotes when there is a dot in the variable
+    'tokens.access' : 'auth'
+  })
+}
+
 var User = mongoose.model('User', UserSchema);
 
 module.exports = {User};

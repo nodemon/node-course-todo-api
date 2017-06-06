@@ -7,7 +7,10 @@ console.log(`Message: ${message}`);
 console.log(`Hash: ${hash}`);
 
 // Token will be passed back and forth .. containing the data and its hash
-// JWT Json Web Token
+// This is to ensure that data is not manipulated in the middle ..
+// Hash (Data + 'Salt'). Salt is a shared secret between the two parties
+
+
 
 var data = {
   id : 4
