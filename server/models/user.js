@@ -62,6 +62,21 @@ UserSchema.methods.toJSON = function () {
 }
 
 
+UserSchema.methods.removeToken = function (token) {
+  var user = this;
+
+  return user.update({
+    $pull : { // define we want to pull from the user model
+
+      tokens: { // from the tokens array
+        // any object named token which matches the value token
+        token // token: token
+      }
+    }
+  })
+}
+
+
 // Model method
 UserSchema.statics.findByToken = function (token) {
   var User = this;  // corresponds to model not the document
